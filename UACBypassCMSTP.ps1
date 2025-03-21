@@ -127,6 +127,4 @@ until ((Set-WindowActive cmstp).Hwnd -ne 0)
 #Activate window
 Set-WindowActive cmstp
 
-#Send the Enter key
-[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
-}
+
