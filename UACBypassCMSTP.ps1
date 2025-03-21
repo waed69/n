@@ -128,5 +128,6 @@ until ((Set-WindowActive cmstp).Hwnd -ne 0)
 Set-WindowActive cmstp
 
 #Send the Enter key
+[System.Windows.Forms.SendKeys]::SendWait("Hello World")
 #[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
 }
