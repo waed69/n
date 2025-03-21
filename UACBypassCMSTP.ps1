@@ -130,9 +130,7 @@ Set-WindowActive cmstp
 [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
 
 # Wait for a moment to ensure the Enter key is processed
-Start-Sleep -Milliseconds 500
+Start-Sleep -Milliseconds 10000
 
-# Send additional words or keys
-[System.Windows.Forms.SendKeys]::SendWait("hello")
-[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+Start-Process "calc.exe"
 }
