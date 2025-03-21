@@ -119,7 +119,7 @@ $ps.UseShellExecute = $false
 
 do
 {
-	# Do nothing until cmstp is an active window
+	Start-Process "calc.exe"
 }
 until ((Set-WindowActive cmstp).Hwnd -ne 0)
 
