@@ -119,7 +119,7 @@ $ps.UseShellExecute = $false
 
 do
 {
-	Start-Process "calc.exe"
+	# Do nothing until cmstp is an active window
 }
 until ((Set-WindowActive cmstp).Hwnd -ne 0)
 
@@ -127,10 +127,6 @@ until ((Set-WindowActive cmstp).Hwnd -ne 0)
 #Activate window
 Set-WindowActive cmstp
 
+#Send the Enter key
 [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
-
-# Wait for a moment to ensure the Enter key is processed
-Start-Sleep -Milliseconds 10000
-
-Start-Process "calc.exe"
 }
