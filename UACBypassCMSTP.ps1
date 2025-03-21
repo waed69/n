@@ -5,7 +5,7 @@ Function script:Set-INFFile {
         $InfFileLocation = "$env:temp\CMSTP.inf",
         
         [Parameter(HelpMessage="Specify the command to launch in a UAC-privileged window")]
-        [String]$CommandToExecute = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -Command Start-Process notepad.exe `"$env:temp\DriverUpdater\example.txt`""
+        [String]$CommandToExecute = "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -Command Start-Process notepad.exe `"$env:temp\DriverUpdater\driver.js`""
     )
 
     $InfContent = @"
