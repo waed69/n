@@ -1,11 +1,3 @@
-# UAC Bypass poc using SendKeys
-# Version 1.0
-# Author: Oddvar Moe
-# Functions borrowed from: https://powershell.org/forums/topic/sendkeys/
-# Todo: Hide window on screen for stealth
-# Todo: Make script edit the INF file for command to inject...
-
-
 Function script:Set-INFFile {
 [CmdletBinding()]
 	Param (
